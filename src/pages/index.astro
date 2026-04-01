@@ -1277,14 +1277,21 @@ const paddlePriceId = import.meta.env.PUBLIC_PADDLE_PRICE_ID;
     });
   }
 
-  // Paddle checkout
-  Paddle.Initialize({ token: paddleToken });
+  // Paddle checkout - wait for script to load
+  function initPaddle() {
+    if (typeof Paddle !== 'undefined') {
+      Paddle.Initialize({ token: paddleToken });
 
-  document.getElementById('paddle-buy-btn').addEventListener('click', () => {
-    Paddle.Checkout.open({
-      items: [{ priceId: paddlePriceId, quantity: 1 }],
-    });
-  });
+      document.getElementById('paddle-buy-btn').addEventListener('click', () => {
+        Paddle.Checkout.open({
+          items: [{ priceId: paddlePriceId, quantity: 1 }],
+        });
+      });
+    } else {
+      setTimeout(initPaddle, 100);
+    }
+  }
+  initPaddle();
 </script>
 
 </BaseLayout>
