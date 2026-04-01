@@ -1,0 +1,1290 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Required env vars (create a .env file at project root):
+// PUBLIC_PADDLE_TOKEN=your_client_side_token
+// PUBLIC_PADDLE_PRICE_ID=your_price_id
+const paddleToken = import.meta.env.PUBLIC_PADDLE_TOKEN;
+const paddlePriceId = import.meta.env.PUBLIC_PADDLE_PRICE_ID;
+---
+
+<BaseLayout title="AI that checks its own work.">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:           #0d0d0c;
+    --bg-raised:    #131312;
+    --bg-hover:     #191917;
+    --border:       #232320;
+    --text:         #e4e4dc;
+    --muted:        #62625c;
+    --muted-light:  #8a8a82;
+    --accent:       #c8a847;
+    --accent-dim:   #7a6525;
+    --mono-bg:      #1c1c1a;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.022;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .mono { font-family: 'Fragment Mono', monospace; }
+  .serif { font-family: 'Instrument Serif', serif; }
+
+  .container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13, 13, 12, 0.96);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+  }
+
+  .nav-logo {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 14px;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    list-style: none;
+  }
+
+  .nav-links li { display: flex; align-items: center; }
+
+  .nav-links a {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 4px 16px;
+    transition: color 150ms;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-links .sep {
+    color: var(--border);
+    font-family: 'Fragment Mono', monospace;
+    font-size: 11px;
+    user-select: none;
+  }
+
+  .nav-cta {
+    background: var(--accent);
+    color: var(--bg) !important;
+    font-weight: 500;
+    padding: 7px 18px !important;
+    border-radius: 2px;
+    font-size: 13px !important;
+    transition: background 150ms !important;
+    flex-shrink: 0;
+  }
+
+  .nav-cta:hover { background: var(--accent-dim) !important; color: var(--text) !important; }
+
+  /* ─── HERO ─── */
+  #hero {
+    min-height: calc(100vh - 56px);
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 64px;
+    align-items: center;
+    padding: 80px 32px 80px;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  .hero-label {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 24px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeUp 400ms ease forwards;
+    animation-delay: 0ms;
+  }
+
+  .hero-h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 62px;
+    line-height: 1.04;
+    font-weight: 400;
+    color: var(--text);
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeUp 400ms ease forwards;
+    animation-delay: 80ms;
+  }
+
+  .hero-sub {
+    font-size: 17px;
+    color: var(--muted-light);
+    max-width: 500px;
+    margin-top: 20px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeUp 400ms ease forwards;
+    animation-delay: 160ms;
+  }
+
+  .hero-price {
+    margin-top: 36px;
+    font-size: 14px;
+    color: var(--muted);
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeUp 400ms ease forwards;
+    animation-delay: 240ms;
+  }
+
+  .hero-price .price-tag {
+    font-family: 'Fragment Mono', monospace;
+    color: var(--accent);
+    font-size: 16px;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin-top: 28px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeUp 400ms ease forwards;
+    animation-delay: 320ms;
+  }
+
+  .hero-early-access {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 12px;
+    letter-spacing: 0.03em;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeUp 400ms ease forwards;
+    animation-delay: 280ms;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 13px 28px;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 150ms;
+  }
+
+  .btn-primary:hover { background: #b8952f; }
+
+  .hero-meta {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  /* ─── PIPELINE GRAPHIC ─── */
+  .pipeline-graphic {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .pipeline-svg {
+    width: 100%;
+    max-width: 340px;
+    opacity: 0;
+    animation: fadeUp 600ms ease forwards;
+    animation-delay: 400ms;
+  }
+
+  .node-rect {
+    fill: var(--bg-raised);
+    stroke: var(--border);
+    stroke-width: 1;
+    transition: stroke 200ms;
+  }
+
+  .node-rect:hover { stroke: var(--accent-dim); }
+
+  .node-label {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 9px;
+    fill: var(--muted);
+    dominant-baseline: middle;
+  }
+
+  .node-label.reviewer { fill: #3e3e38; }
+
+  .connector {
+    stroke: var(--border);
+    stroke-width: 1;
+    fill: none;
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: drawLine 1.2s ease forwards;
+  }
+
+  .connector-review {
+    stroke: var(--mono-bg);
+    stroke-width: 1;
+    fill: none;
+    stroke-dasharray: 80;
+    stroke-dashoffset: 80;
+    animation: drawLine 0.6s ease forwards;
+  }
+
+  .pulse-line {
+    stroke: var(--border);
+    stroke-width: 1;
+    fill: none;
+    animation: pulse 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes drawLine {
+    to { stroke-dashoffset: 0; }
+  }
+
+  @keyframes pulse {
+    from { opacity: 0.2; }
+    to   { opacity: 0.7; }
+  }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── SECTIONS SHARED ─── */
+  section {
+    border-top: 1px solid var(--border);
+    padding: 100px 0;
+  }
+
+  .section-label {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 20px;
+  }
+
+  .section-h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 38px;
+    line-height: 1.1;
+    font-weight: 400;
+    max-width: 700px;
+    margin-bottom: 56px;
+  }
+
+  /* ─── FEATURES ─── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+  }
+
+  .feature-cell {
+    padding: 32px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    transition: background 150ms;
+    cursor: default;
+  }
+
+  .feature-cell:hover { background: var(--bg-raised); }
+
+  .feature-cell.full { grid-column: 1 / -1; }
+
+  .feature-num {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .feature-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+
+  .feature-body {
+    font-size: 14px;
+    color: var(--muted-light);
+    line-height: 1.65;
+  }
+
+  /* ─── HOW IT WORKS ─── */
+  .hiw-intro {
+    font-size: 16px;
+    color: var(--muted-light);
+    max-width: 560px;
+    margin-bottom: 56px;
+    margin-top: 0;
+  }
+
+  .hiw-video {
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 56px;
+    max-width: 900px;
+  }
+
+  .hiw-video video {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Hide download button from video controls */
+  .hiw-video video::-internal-media-controls-download-button {
+    display: none;
+  }
+
+  .hiw-video video::-webkit-media-controls-enclosure {
+    overflow: hidden;
+  }
+
+  .hiw-video video::-webkit-media-controls-panel {
+    width: calc(100% - 30px);
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 80px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 28px;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .timeline-step {
+    position: relative;
+    margin-bottom: 40px;
+  }
+
+  .timeline-step:last-child { margin-bottom: 0; }
+
+  .step-num {
+    position: absolute;
+    left: -80px;
+    top: 2px;
+    font-family: 'Fragment Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--mono-bg);
+    padding: 3px 7px;
+    border: 1px solid var(--border);
+    width: 52px;
+    text-align: center;
+  }
+
+  .step-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .step-body {
+    font-size: 14px;
+    color: var(--muted-light);
+    max-width: 600px;
+  }
+
+  .timeline-break {
+    margin: 40px 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--muted);
+    font-style: italic;
+    font-size: 13px;
+  }
+
+  .timeline-break::before, .timeline-break::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .timeline-note {
+    margin-top: 48px;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--muted);
+    padding-left: 80px;
+    border-top: 1px solid var(--border);
+    padding-top: 28px;
+  }
+
+  /* ─── PRICING ─── */
+  .pricing-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pricing-card {
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    padding: 44px;
+    max-width: 520px;
+    width: 100%;
+  }
+
+  .pricing-h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 38px;
+    font-weight: 400;
+    margin-bottom: 12px;
+  }
+
+  .pricing-h2 .price-amt {
+    color: var(--accent);
+  }
+
+  .pricing-sub {
+    font-size: 15px;
+    color: var(--muted-light);
+    margin-bottom: 28px;
+  }
+
+  .pricing-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+
+  .pricing-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .pricing-list li {
+    display: flex;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .pricing-list .arrow {
+    font-family: 'Fragment Mono', monospace;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .btn-primary-full {
+    width: 100%;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 14px;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    transition: background 150ms;
+  }
+
+  .btn-primary-full:hover { background: #b8952f; }
+
+  .pricing-early-access {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .pricing-note {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 16px;
+    line-height: 1.6;
+  }
+
+  /* Not on Linux */
+  .waitlist {
+    margin-top: 64px;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+  }
+
+  .waitlist h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .waitlist p {
+    font-size: 14px;
+    color: var(--muted-light);
+    margin-bottom: 20px;
+  }
+
+  .email-row {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+  }
+
+  .email-row input {
+    flex: 1;
+    background: var(--bg);
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 11px 16px;
+  }
+
+  .email-row input::placeholder { color: var(--muted); }
+
+  .email-row button {
+    background: transparent;
+    border: none;
+    border-left: 1px solid var(--border);
+    color: var(--muted-light);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 11px 20px;
+    cursor: pointer;
+    transition: color 150ms;
+    white-space: nowrap;
+  }
+
+  .email-row button:hover { color: var(--text); }
+
+  /* ─── FAQ ─── */
+  .faq-list {
+    max-width: 720px;
+  }
+
+  .faq-item {
+    border-top: 1px solid var(--border);
+  }
+
+  .faq-item:last-child { border-bottom: 1px solid var(--border); }
+
+  .faq-trigger {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 20px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    cursor: pointer;
+    text-align: left;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .faq-toggle {
+    font-family: 'Fragment Mono', monospace;
+    color: var(--muted);
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: color 150ms;
+    line-height: 1.4;
+  }
+
+  .faq-item.open .faq-toggle { color: var(--accent); }
+
+  .faq-body {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 220ms ease, padding 220ms ease;
+  }
+
+  .faq-body-inner {
+    padding-bottom: 20px;
+    font-size: 14px;
+    color: var(--muted-light);
+    line-height: 1.7;
+    max-width: 640px;
+  }
+
+  .faq-item.open .faq-body { max-height: 600px; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 48px 0;
+  }
+
+  .footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+  }
+
+  .footer-brand .wordmark {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .footer-brand .tagline {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 0;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .footer-links a {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 2px 12px;
+    transition: color 150ms;
+  }
+
+  .footer-links a:hover { color: var(--text); }
+
+  .footer-links .sep {
+    color: var(--border);
+    font-family: 'Fragment Mono', monospace;
+    font-size: 10px;
+    user-select: none;
+  }
+
+  .footer-bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-platform {
+    font-family: 'Fragment Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .footer-copy {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ─── FADE-UP ON SCROLL ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 450ms ease, transform 450ms ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    #hero {
+      grid-template-columns: 1fr;
+      gap: 0;
+      padding: 64px 24px;
+    }
+
+    .pipeline-graphic { display: none; }
+
+    .hero-h1 { font-size: 44px; }
+
+    .features-grid { grid-template-columns: 1fr; }
+
+    .feature-cell.full { grid-column: 1; }
+  }
+
+  @media (max-width: 640px) {
+    .container { padding: 0 20px; }
+
+    .nav-links { display: none; }
+
+    .nav-inner { padding: 0 20px; }
+
+    .footer-top { flex-direction: column; gap: 24px; }
+
+    .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+
+    .section-h2 { font-size: 28px; }
+
+    .pricing-card { padding: 28px 24px; }
+
+    .timeline { padding-left: 60px; }
+
+    .timeline::before { left: 20px; }
+
+    .step-num { left: -60px; width: 42px; font-size: 10px; }
+
+    .timeline-note { padding-left: 60px; }
+
+    .hiw-video { max-width: 100%; }
+  }
+</style>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">WAZEAR</a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><span class="sep">·</span></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><span class="sep">·</span></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><span class="sep">·</span></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><span class="sep">·</span></li>
+      <li><a href="/docs">Docs</a></li>
+      <li><span class="sep">·</span></li>
+      <li><a href="#pricing" class="nav-cta">Get Wazear — $49</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div id="hero">
+  <div class="hero-text">
+    <p class="hero-label mono">// AI agent orchestrator</p>
+    <h1 class="hero-h1 serif">AI that checks<br>its own work.</h1>
+    <p class="hero-sub">Wazear orchestrates AI agents in a structured pipeline. One builds. Another tears it apart. You get what survives.</p>
+    <p class="hero-price">
+      <span class="price-tag mono">$49</span> once. Free updates on same version. Pay again only when we earn it and you find it's worth it.
+    </p>
+    <p class="hero-early-access mono reveal">
+      Early access — v1 is functional and in active development. Price increases when Mac and Windows ship.
+    </p>
+    <div class="hero-actions">
+      <a href="#pricing" class="btn-primary">Get Wazear — $49</a>
+      <p class="hero-meta mono">
+        Linux only · Mac &amp; Windows coming soon<br>
+        Requires Node.js + Qwen Code (free tier: 1,000 req/day)<br>
+        Or bring your own API key (OpenAI, Gemini, OpenRouter)
+      </p>
+    </div>
+  </div>
+
+  <!-- PIPELINE GRAPHIC -->
+  <div class="pipeline-graphic">
+    <svg class="pipeline-svg" viewBox="0 0 280 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+      <!-- Main vertical connector (animated pulse) -->
+      <line class="pulse-line" x1="60" y1="30" x2="60" y2="490" style="animation-delay:1.3s"/>
+
+      <!-- Main flow connectors -->
+      <line class="connector" x1="60" y1="48" x2="60" y2="108" style="animation-delay:0.1s"/>
+      <line class="connector" x1="60" y1="160" x2="60" y2="220" style="animation-delay:0.3s"/>
+      <line class="connector" x1="60" y1="272" x2="60" y2="332" style="animation-delay:0.5s"/>
+      <line class="connector" x1="60" y1="384" x2="60" y2="420" style="animation-delay:0.7s"/>
+      <line class="connector" x1="60" y1="448" x2="60" y2="484" style="animation-delay:0.9s"/>
+
+      <!-- Reviewer branch connectors -->
+      <path class="connector-review" d="M 60 80 Q 120 80 120 134" style="animation-delay:0.2s"/>
+      <path class="connector-review" d="M 60 192 Q 120 192 120 246" style="animation-delay:0.4s"/>
+      <path class="connector-review" d="M 60 304 Q 120 304 120 358" style="animation-delay:0.6s"/>
+
+      <!-- NODE: Planner -->
+      <rect class="node-rect" x="10" y="12" width="100" height="36" rx="1"/>
+      <text class="node-label" x="60" y="30" text-anchor="middle">PLANNER</text>
+
+      <!-- NODE: Planner Reviewer -->
+      <rect class="node-rect" x="110" y="118" width="140" height="36" rx="1" style="stroke: #2a2a26;"/>
+      <text class="node-label reviewer" x="180" y="136" text-anchor="middle">PLANNER REVIEWER</text>
+
+      <!-- NODE: Architect -->
+      <rect class="node-rect" x="10" y="124" width="100" height="36" rx="1"/>
+      <text class="node-label" x="60" y="142" text-anchor="middle">ARCHITECT</text>
+
+      <!-- NODE: Architect Reviewer -->
+      <rect class="node-rect" x="110" y="230" width="140" height="36" rx="1" style="stroke: #2a2a26;"/>
+      <text class="node-label reviewer" x="180" y="248" text-anchor="middle">ARCHITECT REVIEWER</text>
+
+      <!-- NODE: Programmer -->
+      <rect class="node-rect" x="10" y="236" width="100" height="36" rx="1"/>
+      <text class="node-label" x="60" y="254" text-anchor="middle">PROGRAMMER</text>
+
+      <!-- NODE: Programmer Reviewer -->
+      <rect class="node-rect" x="110" y="342" width="140" height="36" rx="1" style="stroke: #2a2a26;"/>
+      <text class="node-label reviewer" x="180" y="360" text-anchor="middle">PROGRAMMER REVIEWER</text>
+
+      <!-- NODE: QA -->
+      <rect class="node-rect" x="10" y="348" width="100" height="36" rx="1"/>
+      <text class="node-label" x="60" y="366" text-anchor="middle">QA</text>
+
+      <!-- NODE: Fixer -->
+      <rect class="node-rect" x="10" y="460" width="100" height="36" rx="1"/>
+      <text class="node-label" x="60" y="478" text-anchor="middle">FIXER</text>
+
+      <!-- QA loop back to Fixer indicator -->
+      <path class="connector" d="M 110 366 Q 200 410 110 460" stroke-dasharray="4 3" style="animation-delay:1.0s; stroke: #2a2a26;"/>
+      <text class="node-label" x="210" y="416" text-anchor="middle" style="fill:#2e2e2a; font-size:8px;">loop until done</text>
+    </svg>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <p class="section-label mono reveal">// 02 — Features</p>
+    <h2 class="section-h2 serif reveal">What makes Wazear different from throwing prompts at a chatbot</h2>
+
+    <div class="features-grid reveal">
+
+      <div class="feature-cell full">
+        <p class="feature-num mono">01</p>
+        <p class="feature-title">What ships with Wazear</p>
+        <p class="feature-body">Wazear comes with a default pipeline of eight agents: Planner, Planner Reviewer, Architect, Architect Reviewer, Programmer, Programmer Reviewer, Fixer, and QA. Each has a defined role and a defined place in the sequence. You can modify any of them, remove them, or build entirely new ones. This is just the starting point.</p>
+      </div>
+
+      <div class="feature-cell">
+        <p class="feature-num mono">02</p>
+        <p class="feature-title">A process, not a conversation</p>
+        <p class="feature-body">Most AI coding tools are one conversation going wherever it goes. Wazear runs a pipeline where each agent reads only what it needs — the plan, the architecture, the code — and produces exactly its part. No agent inherits another's confusion. The structure is the product.</p>
+      </div>
+
+      <div class="feature-cell">
+        <p class="feature-num mono">03</p>
+        <p class="feature-title">Every output can have an opponent</p>
+        <p class="feature-body">The default pipeline pairs every producing agent with a Reviewer. The Reviewer reads the spec and the output — nothing else. Not the producer's reasoning, not its intent. Just what was asked and what was delivered. That gap is where most mistakes surface. Fewer reach you.</p>
+      </div>
+
+      <div class="feature-cell">
+        <p class="feature-num mono">04</p>
+        <p class="feature-title">Two quality gates, not one</p>
+        <p class="feature-body">The Producer Reviewer catches issues before the output leaves that stage — think of it as the programmer's team lead. QA is different. It runs after everything is built, takes your screenshots and your observations, adds its own analysis, and hands a full report to the Fixer. Internal review and user acceptance testing. Both, by default.</p>
+      </div>
+
+      <div class="feature-cell">
+        <p class="feature-num mono">05</p>
+        <p class="feature-title">Guardrails you own</p>
+        <p class="feature-body">Wazear ships with a default list of banned commands. You can add your own. Agents whose job is to think — planners, reviewers, architects — can't run commands at all. Not restricted. Blocked entirely.</p>
+      </div>
+
+      <div class="feature-cell">
+        <p class="feature-num mono">06</p>
+        <p class="feature-title">Your pipeline, your rules</p>
+        <p class="feature-body">The default pipeline is a starting point. Use it as-is, modify it, strip it down, or build something entirely your own. Agents are prompts with a small config — if you can describe a role, you can create one. No programming required. We are working on a UI-only solution that streamlines this further.</p>
+      </div>
+
+      <div class="feature-cell">
+        <p class="feature-num mono">07</p>
+        <p class="feature-title">You choose your AI, including free options</p>
+        <p class="feature-body">Wazear runs on Qwen Code. Qwen currently offers a free usage tier when you sign up — check their site for current limits. Need more or something different? Plug in your own API key — OpenAI, Gemini, or OpenRouter, which opens access to virtually every AI provider available.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works">
+  <div class="container">
+    <p class="section-label mono reveal">// 03 — How It Works</p>
+    <h2 class="section-h2 serif reveal" style="margin-bottom:16px;">How a project moves through Wazear</h2>
+    <p class="hiw-intro reveal">Simplicity is at the heart of Wazear. Your pipeline is nothing more than agent definitions running in sequence — each doing one thing and one thing only.</p>
+
+    <div class="hiw-video reveal">
+      <video controls preload="metadata" controlsList="nodownload" disablePictureInPicture>
+        <source src="/Wazear.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+
+    <div class="timeline reveal">
+
+      <div class="timeline-step">
+        <span class="step-num mono">01</span>
+        <p class="step-title">Create a project</p>
+        <p class="step-body">Choose where it lives on your disk and write a brief describing what you want to build.</p>
+      </div>
+
+      <div class="timeline-step">
+        <span class="step-num mono">02</span>
+        <p class="step-title">Choose your tech stack</p>
+        <p class="step-body">Pick what you want to build with. Don't know? Leave it — the Architect will decide based on your brief.</p>
+      </div>
+
+      <div class="timeline-step">
+        <span class="step-num mono">03</span>
+        <p class="step-title">Choose your agents</p>
+        <p class="step-body">Select which agents run in your pipeline. Wazear ships with a roster that simulates a full Software Development Life Cycle — ready to use out of the box.</p>
+      </div>
+
+      <div class="timeline-step">
+        <span class="step-num mono">04</span>
+        <p class="step-title">Start the pipeline</p>
+        <p class="step-body">One click. The first agent picks up your brief, does its job, and hands off to the next. You don't manage the handoffs. Wazear does.</p>
+      </div>
+
+      <div class="timeline-break">If you decide to use our agents, here is how it goes:</div>
+
+      <div class="timeline-step">
+        <span class="step-num mono">05</span>
+        <p class="step-title">The Planner</p>
+        <p class="step-body">Takes your brief and turns it into a list of actionable goals. The Planner Reviewer reads it cold — spotted an issue? It goes back to the Planner with feedback until it's right.</p>
+      </div>
+
+      <div class="timeline-step">
+        <span class="step-num mono">06</span>
+        <p class="step-title">The Architect</p>
+        <p class="step-body">Lays out the technical architecture and tech stack. Its own Reviewer checks the work. Same loop — issues go back, get fixed, move forward.</p>
+      </div>
+
+      <div class="timeline-step">
+        <span class="step-num mono">07</span>
+        <p class="step-title">The Programmer</p>
+        <p class="step-body">Builds your product. The Programmer Reviewer checks the code against the architecture as the criteria. Anything off goes back to the Programmer to fix.</p>
+      </div>
+
+      <div class="timeline-step">
+        <span class="step-num mono">08</span>
+        <p class="step-title">The QA</p>
+        <p class="step-body">Runs a final check on everything. You test the app yourself, take screenshots, add notes. All of it gets compiled into a report.</p>
+      </div>
+
+      <div class="timeline-step">
+        <span class="step-num mono">09</span>
+        <p class="step-title">The Fixer</p>
+        <p class="step-body">Works through every issue in the QA report. Once done, it loops back to QA automatically. That cycle continues until you're satisfied and mark the pipeline complete.</p>
+      </div>
+
+    </div>
+
+    <p class="timeline-note reveal"><em>At any point, you can step in, review any output, and modify it before the next stage continues. Or don't. Your call.</em></p>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="container">
+    <p class="section-label mono reveal">// 04 — Pricing</p>
+    <div class="pricing-wrap">
+
+      <div class="pricing-card reveal">
+        <h2 class="pricing-h2 serif">Wazear — <span class="price-amt">$49</span></h2>
+        <p class="pricing-sub">One time. No subscription. No credit meters. No surprises from us.</p>
+        <hr class="pricing-divider">
+        <ul class="pricing-list">
+          <li><span class="arrow mono">→</span><span>Full pipeline. Ready to run on first launch.</span></li>
+          <li><span class="arrow mono">→</span><span>Free same-version updates — v1.2, v1.5.8, v1.9.11, all free.</span></li>
+          <li><span class="arrow mono">→</span><span>Currently available on Linux. Mac and Windows coming soon.</span></li>
+        </ul>
+        <hr class="pricing-divider">
+        <p class="pricing-early-access">Early access — v1 is in active development. Bugs are expected and being fixed.</p>
+        <button type="button" class="btn-primary-full" id="paddle-buy-btn">Get Wazear — $49</button>
+        <p class="pricing-note">$49 once. Free updates on same version. Pay again only when we earn it and you find it's worth it. Pay today, not every day.<br><br>$49 is an early access price. It will increase as the product matures.</p>
+      </div>
+
+      <div class="waitlist reveal">
+        <h3>Not on Linux?</h3>
+        <p>Mac and Windows versions are coming. Leave your email and we'll notify you when they're ready.</p>
+        <div class="email-row">
+          <input type="email" placeholder="your@email.com">
+          <button type="button">Notify me</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <p class="section-label mono reveal">// 05 — FAQ</p>
+
+    <div class="faq-list reveal">
+
+      <div class="faq-item">
+        <button class="faq-trigger" aria-expanded="false">
+          Is Wazear finished?
+          <span class="faq-toggle mono">+</span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-body-inner">No. Wazear v1 is early access — it works, but it's actively being developed. You may encounter bugs. The price reflects that. Every v1 update ships free as it's ready. If something breaks, reach out to use through the support/feedback button in the app's menu or through the <a href="/contact">Contact page</a>.</p>
+        </div>
+      </div>
+
+      <div class="faq-item open">
+        <button class="faq-trigger" aria-expanded="true">
+          Do I need to know how to code?
+          <span class="faq-toggle mono">−</span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-body-inner">Not to use Wazear. The default pipeline ships ready to run — you can start a project without touching a single agent file. Creating or customizing agents means editing a markdown file — think of it like writing a structured Notion page — and choosing a few options in the UI. If you can describe a role clearly, you can create an agent for it. We're working on a UI-only solution that streamlines this further.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-trigger" aria-expanded="false">
+          What happens when the AI makes a mistake?
+          <span class="faq-toggle mono">+</span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-body-inner">It will. That's not a flaw in Wazear — it's a reality of working with AI. What Wazear does is put structure around it. Reviewer agents challenge every output before it moves forward. QA gives you a stage to manually test your app, take screenshots, and flag what's wrong — which gets compiled into a report the Fixer works from. You'll surface more mistakes earlier than you would with a single AI session. You won't catch all of them. Gotta catch 'em all is a different product.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-trigger" aria-expanded="false">
+          Do I pay again for updates?
+          <span class="faq-toggle mono">+</span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-body-inner">Same-version updates are free. If you buy v1, every update within v1 — v1.2, v1.5.8, v1.9.11 — costs you nothing. If you want v2, you buy it separately. Either way, you never pay for anything you don't feel is worth it and we didn't earn.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-trigger" aria-expanded="false">
+          What do I need to install?
+          <span class="faq-toggle mono">+</span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-body-inner">Wazear itself has no external dependencies — it's a local desktop app. However, it currently runs on Qwen Code as its AI engine, and Qwen Code requires Node.js. In practice: install Node.js, then install Qwen Code with one npm command. The app walks you through it on first launch, and a full setup guide is available. Future versions of Wazear may reduce or remove this requirement entirely.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-trigger" aria-expanded="false">
+          Is my data private?
+          <span class="faq-toggle mono">+</span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-body-inner">Wazear is fully local. It doesn't connect to any server, doesn't phone home, and collects nothing. It coordinates between agents running on your machine — that's it. That said, those agents are Qwen instances, which means whatever you feed into the pipeline goes to Qwen under their terms. If you use your own API key — OpenAI, Gemini, or OpenRouter — your data goes to that provider under their terms. We don't touch it, intercept it, or see it.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-trigger" aria-expanded="false">
+          Can I use a different AI provider?
+          <span class="faq-toggle mono">+</span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-body-inner">Yes. Wazear currently runs on Qwen Code, which offers a free usage tier — check their site for current details. If you need more capacity or a different model, plug in your own API key. OpenAI, Gemini, and OpenRouter are supported. OpenRouter alone opens access to virtually every AI provider available, including additional free tiers.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-trigger" aria-expanded="false">
+          How is this different from Cursor, Claude Code, or Windsurf?
+          <span class="faq-toggle mono">+</span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-body-inner">Those are single-agent tools. You prompt them, they produce something, you review it, you prompt again. You are the orchestrator — managing context, catching mistakes, deciding what goes where. Wazear is the orchestrator. It runs a structured pipeline where each agent has a defined role, reads only what it needs, and hands off to the next stage automatically. Reviewer agents challenge outputs before they move forward. You step in when you want — not because the process requires you to babysit it. It's also not an IDE. It doesn't replace your editor. It runs alongside whatever tools you already use.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-trigger" aria-expanded="false">
+          Does Wazear work on my operating system?
+          <span class="faq-toggle mono">+</span>
+        </button>
+        <div class="faq-body">
+          <p class="faq-body-inner">Wazear currently runs on Linux. Mac and Windows support is in development. If you're on Mac or Windows, get in touch via the Contact page or leave your email in the waitlist above.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="wordmark mono">WAZEAR</span>
+        <span class="tagline">AI agent orchestration for builders.</span>
+      </div>
+      <nav class="footer-links">
+        <a href="#">Download</a>
+        <span class="sep">·</span>
+        <a href="/docs">Docs</a>
+        <span class="sep">·</span>
+        <a href="/contact">Contact</a>
+        <span class="sep">·</span>
+        <a href="#faq">FAQ</a>
+        <span class="sep">·</span>
+        <a href="/terms">Terms & Conditions</a>
+        <span class="sep">·</span>
+        <a href="/privacy">Privacy Policy</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-platform mono">Currently available on Linux · Mac and Windows coming soon</span>
+      <span class="footer-copy">© 2026 Wazear. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<script define:vars={{ paddleToken, paddlePriceId }}>
+  // FAQ accordion
+  document.querySelectorAll('.faq-trigger').forEach(trigger => {
+    trigger.addEventListener('click', () => {
+      const item = trigger.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => {
+        i.classList.remove('open');
+        i.querySelector('.faq-toggle').textContent = '+';
+        i.querySelector('.faq-trigger').setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        trigger.querySelector('.faq-toggle').textContent = '−';
+        trigger.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Active nav highlight
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+
+  const navObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.style.color = link.getAttribute('href') === '#' + entry.target.id
+            ? 'var(--accent)' : '';
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+
+  sections.forEach(s => navObserver.observe(s));
+
+  // Video protection - disable right-click and keyboard shortcuts
+  const video = document.querySelector('.hiw-video video');
+  if (video) {
+    video.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      return false;
+    });
+
+    video.addEventListener('keydown', (e) => {
+      // Block Ctrl+S, Ctrl+P, Ctrl+C
+      if ((e.ctrlKey && (e.key === 's' || e.key === 'p' || e.key === 'c')) ||
+          (e.metaKey && (e.key === 's' || e.key === 'p' || e.key === 'c'))) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  }
+
+  // Paddle checkout
+  Paddle.Initialize({ token: paddleToken });
+
+  document.getElementById('paddle-buy-btn').addEventListener('click', () => {
+    Paddle.Checkout.open({
+      items: [{ priceId: paddlePriceId, quantity: 1 }],
+    });
+  });
+</script>
+
+</BaseLayout>

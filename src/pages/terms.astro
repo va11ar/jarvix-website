@@ -1,0 +1,426 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Terms and Conditions">
+  <style>
+    :root {
+      --bg:          #0d0d0c;
+      --bg-raised:   #131312;
+      --bg-hover:     #191917;
+      --border:      #232320;
+      --text:        #e4e4dc;
+      --muted:       #62625c;
+      --muted-light: #8a8a82;
+      --accent:      #c8a847;
+      --accent-dim:  #7a6525;
+      --mono-bg:     #1c1c1a;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.022;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .mono { font-family: 'Fragment Mono', monospace; }
+    .serif { font-family: 'Instrument Serif', serif; }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 13, 12, 0.96);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+    }
+
+    .nav-logo {
+      font-family: 'Fragment Mono', monospace;
+      font-size: 14px;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      list-style: none;
+    }
+
+    .nav-links li { display: flex; align-items: center; }
+
+    .nav-links a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 4px 16px;
+      transition: color 150ms;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-links .sep {
+      color: var(--border);
+      font-family: 'Fragment Mono', monospace;
+      font-size: 11px;
+      user-select: none;
+    }
+
+    .nav-cta {
+      background: var(--accent);
+      color: var(--bg) !important;
+      font-weight: 500;
+      padding: 7px 18px !important;
+      border-radius: 2px;
+      font-size: 13px !important;
+      transition: background 150ms !important;
+      flex-shrink: 0;
+    }
+
+    .nav-cta:hover { background: var(--accent-dim) !important; color: var(--text) !important; }
+
+    /* ─── TERMS PAGE CONTENT ─── */
+    .legal-content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 80px 32px;
+    }
+
+    .legal-heading {
+      font-family: 'Instrument Serif', serif;
+      font-size: 42px;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .legal-updated {
+      font-family: 'Fragment Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 48px;
+    }
+
+    .legal-section {
+      margin-bottom: 40px;
+    }
+
+    .legal-section h2 {
+      font-family: 'Fragment Mono', monospace;
+      font-size: 14px;
+      color: var(--text);
+      letter-spacing: 0.04em;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .legal-section p {
+      font-size: 15px;
+      color: var(--muted-light);
+      margin-bottom: 16px;
+    }
+
+    .legal-section ul {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 16px;
+    }
+
+    .legal-section li {
+      font-size: 15px;
+      color: var(--muted-light);
+      padding-left: 20px;
+      position: relative;
+      margin-bottom: 8px;
+    }
+
+    .legal-section li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--muted);
+    }
+
+    .legal-section a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .legal-section a:hover {
+      text-decoration: underline;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 0;
+    }
+
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 32px;
+    }
+
+    .footer-brand .wordmark {
+      font-family: 'Fragment Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      letter-spacing: 0.08em;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .footer-brand .tagline {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 0;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 2px 12px;
+      transition: color 150ms;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+
+    .footer-links .sep {
+      color: var(--border);
+      font-family: 'Fragment Mono', monospace;
+      font-size: 10px;
+      user-select: none;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-platform {
+      font-family: 'Fragment Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 640px) {
+      .container { padding: 0 20px; }
+
+      .nav-links { display: none; }
+
+      .nav-inner { padding: 0 20px; }
+
+      .legal-content { padding: 64px 20px; }
+
+      .legal-heading { font-size: 32px; }
+
+      .footer-top { flex-direction: column; gap: 24px; }
+
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    }
+  </style>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">WAZEAR</a>
+      <ul class="nav-links">
+        <li><a href="/#features">Features</a></li>
+        <li><span class="sep">·</span></li>
+        <li><a href="/#how-it-works">How It Works</a></li>
+        <li><span class="sep">·</span></li>
+        <li><a href="/#pricing">Pricing</a></li>
+        <li><span class="sep">·</span></li>
+        <li><a href="/#faq">FAQ</a></li>
+        <li><span class="sep">·</span></li>
+        <li><a href="/docs">Docs</a></li>
+        <li><span class="sep">·</span></li>
+        <li><a href="/#pricing" class="nav-cta">Get Wazear — $49</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- TERMS CONTENT -->
+  <main class="legal-content">
+    <h1 class="legal-heading serif">Terms and Conditions</h1>
+    <p class="legal-updated mono">Last updated: March 2026</p>
+
+    <div class="legal-section">
+      <p>These Terms and Conditions govern your purchase and use of Wazear, a local desktop application for AI agent orchestration developed and distributed by the Wazear team. By purchasing or using Wazear, you agree to be bound by these terms.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>1. Product Description</h2>
+      <p>Wazear is a local desktop application currently available for Linux (versions for macOS and Windows are currently in testing — for more information, use the <a href="/contact">contact form</a>). It orchestrates AI agents in a structured pipeline on your machine. Wazear does not operate a server, does not collect user data, and does not transmit any information to the Wazear team.</p>
+      <p>Wazear uses Qwen Code as its underlying AI engine by default. Users may alternatively configure their own API keys for OpenAI, Gemini, or OpenRouter. All AI inference is performed by those third-party providers under their own terms of service, not by Wazear.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>2. License Grant</h2>
+      <p>Upon completing your purchase, you are granted a non-exclusive, non-transferable, perpetual license to install and use the purchased version of Wazear on your own machines for personal or commercial purposes. This license does not permit resale, sublicensing, redistribution, or rental of Wazear to third parties.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>3. Versioning and Updates</h2>
+      <p>Wazear uses major version numbering (e.g., v1, v2). Your purchase grants you access to all minor and patch updates within the major version you purchased at no additional cost. Major version upgrades are separate purchases.</p>
+      <p>The early access price of $49 applies to v1. This price will increase as the product matures. Pricing for future major versions will differ.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>4. Purchase and Payment</h2>
+      <p>All purchases are processed by Paddle.com Market Limited ('Paddle'), which acts as the Merchant of Record for all Wazear transactions. Paddle handles payment processing, invoicing, and applicable tax collection on behalf of Wazear. Your payment contract is with Paddle, not directly with Wazear.</p>
+      <p>By completing a purchase, you also agree to Paddle's Terms of Service and Privacy Policy, available at paddle.com.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>5. Refunds</h2>
+      <p>All purchases are processed by Paddle, who acts as Merchant of Record. Refund eligibility is governed by Paddle's refund policy. For digital goods that have been downloaded or where license delivery has begun, Paddle's policy is that refunds are handled on a case-by-case basis at Paddle's discretion — there is no automatic 14-day right of return once delivery has commenced.</p>
+      <p>If you experience a technical issue with Wazear, contact us via the <a href="/contact">Contact page</a> before requesting a refund. We will work to resolve the issue. If we cannot, we will support your refund request with Paddle.</p>
+      <p>To request a refund, contact Paddle directly at paddle.net/support. Wazear cannot process refunds directly as Paddle is the Merchant of Record.</p>
+      <p>Nothing in this section affects any mandatory consumer protection rights you may have under the laws of your jurisdiction.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>6. Third-Party AI Providers</h2>
+      <p>Wazear coordinates AI agents using third-party AI services. When you use Wazear, any content you submit through the pipeline — including project briefs, code, and instructions — is transmitted to and processed by the AI provider you have configured (Qwen, OpenAI, Gemini, or OpenRouter). Wazear does not intercept, store, or have access to this content.</p>
+      <p>You are responsible for reviewing and complying with the terms of service and acceptable use policies of whichever AI provider you use. Wazear makes no representations regarding those providers' practices and is not liable for their actions or service availability.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>7. System Requirements and Dependencies</h2>
+      <p>Wazear requires Node.js to be installed on your system, as Qwen Code depends on it. Installation instructions are provided in the application on first launch and in the documentation. Wazear is not responsible for issues arising from incompatible system configurations or third-party dependency failures.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>8. Acceptable Use</h2>
+      <p>You may use Wazear for any lawful purpose, personal or commercial. You may not use Wazear to:</p>
+      <ul>
+        <li>Violate any applicable law or regulation</li>
+        <li>Generate content that infringes third-party intellectual property rights</li>
+        <li>Facilitate harm to individuals or groups</li>
+        <li>Circumvent or attempt to reverse-engineer Wazear's licensing mechanisms</li>
+      </ul>
+    </div>
+
+    <div class="legal-section">
+      <h2>9. Intellectual Property</h2>
+      <p>Wazear, its interface, pipeline architecture, and associated documentation are the intellectual property of the Wazear team. Your purchase grants you a usage license, not ownership of the software or its underlying technology. All rights not expressly granted are reserved.</p>
+      <p>Content you create using Wazear — including code, plans, and outputs generated through the pipeline — belongs to you, subject to the terms of the AI provider that processed it.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>10. Disclaimer of Warranties</h2>
+      <p>Wazear is provided "as is" without warranty of any kind. To the fullest extent permitted by applicable law, the Wazear team disclaims all warranties, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement. We do not warrant that Wazear will be error-free, uninterrupted, or produce any specific result.</p>
+      <p>AI-generated output is probabilistic and may contain errors, omissions, or inaccuracies. You are solely responsible for reviewing and validating all output before use.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>11. Limitation of Liability</h2>
+      <p>To the maximum extent permitted by applicable law, the Wazear team shall not be liable for any indirect, incidental, consequential, or punitive damages arising from your use of or inability to use Wazear, including but not limited to loss of data, loss of profits, or business interruption, even if advised of the possibility of such damages.</p>
+      <p>In no event shall the Wazear team's total liability to you exceed the amount you paid for Wazear.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>12. Governing Law</h2>
+      <p>These Terms are governed by and construed in accordance with the laws of the Arab Republic of Egypt, without regard to conflict of law principles. Any disputes arising under or related to these Terms shall be subject to the exclusive jurisdiction of the courts located in Egypt.</p>
+      <p>If you are a consumer in a jurisdiction that mandates local consumer protection laws, those protections are not affected by this clause.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>13. Changes to These Terms</h2>
+      <p>We may update these Terms from time to time. Material changes will be communicated through the Wazear website or release notes. Continued use of Wazear after such changes constitutes acceptance of the updated Terms.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>14. Contact</h2>
+      <p>For questions regarding these Terms, contact us via the <a href="/contact">Contact page</a>.</p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="wordmark mono">WAZEAR</span>
+          <span class="tagline">AI agent orchestration for builders.</span>
+        </div>
+        <nav class="footer-links">
+          <a href="#">Download</a>
+          <span class="sep">·</span>
+          <a href="/docs">Docs</a>
+          <span class="sep">·</span>
+          <a href="/contact">Contact</a>
+          <span class="sep">·</span>
+          <a href="/#faq">FAQ</a>
+          <span class="sep">·</span>
+          <a href="/terms">Terms & Conditions</a>
+          <span class="sep">·</span>
+          <a href="/privacy">Privacy Policy</a>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-platform mono">Currently available on Linux · Mac and Windows coming soon</span>
+        <span class="footer-copy">© 2026 Wazear. All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+</BaseLayout>

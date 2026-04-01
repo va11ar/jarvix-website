@@ -1,0 +1,409 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Privacy Policy">
+  <style>
+    :root {
+      --bg:          #0d0d0c;
+      --bg-raised:   #131312;
+      --bg-hover:     #191917;
+      --border:      #232320;
+      --text:        #e4e4dc;
+      --muted:       #62625c;
+      --muted-light: #8a8a82;
+      --accent:      #c8a847;
+      --accent-dim:  #7a6525;
+      --mono-bg:     #1c1c1a;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.022;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .mono { font-family: 'Fragment Mono', monospace; }
+    .serif { font-family: 'Instrument Serif', serif; }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 13, 12, 0.96);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+    }
+
+    .nav-logo {
+      font-family: 'Fragment Mono', monospace;
+      font-size: 14px;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      list-style: none;
+    }
+
+    .nav-links li { display: flex; align-items: center; }
+
+    .nav-links a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 4px 16px;
+      transition: color 150ms;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-links .sep {
+      color: var(--border);
+      font-family: 'Fragment Mono', monospace;
+      font-size: 11px;
+      user-select: none;
+    }
+
+    .nav-cta {
+      background: var(--accent);
+      color: var(--bg) !important;
+      font-weight: 500;
+      padding: 7px 18px !important;
+      border-radius: 2px;
+      font-size: 13px !important;
+      transition: background 150ms !important;
+      flex-shrink: 0;
+    }
+
+    .nav-cta:hover { background: var(--accent-dim) !important; color: var(--text) !important; }
+
+    /* ─── PRIVACY PAGE CONTENT ─── */
+    .legal-content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 80px 32px;
+    }
+
+    .legal-heading {
+      font-family: 'Instrument Serif', serif;
+      font-size: 42px;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .legal-updated {
+      font-family: 'Fragment Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 48px;
+    }
+
+    .legal-section {
+      margin-bottom: 40px;
+    }
+
+    .legal-section h2 {
+      font-family: 'Fragment Mono', monospace;
+      font-size: 14px;
+      color: var(--text);
+      letter-spacing: 0.04em;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .legal-section p {
+      font-size: 15px;
+      color: var(--muted-light);
+      margin-bottom: 16px;
+    }
+
+    .legal-section ul {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 16px;
+    }
+
+    .legal-section li {
+      font-size: 15px;
+      color: var(--muted-light);
+      padding-left: 20px;
+      position: relative;
+      margin-bottom: 8px;
+    }
+
+    .legal-section li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--muted);
+    }
+
+    .legal-section a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .legal-section a:hover {
+      text-decoration: underline;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 0;
+    }
+
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 32px;
+    }
+
+    .footer-brand .wordmark {
+      font-family: 'Fragment Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      letter-spacing: 0.08em;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .footer-brand .tagline {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 0;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 2px 12px;
+      transition: color 150ms;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+
+    .footer-links .sep {
+      color: var(--border);
+      font-family: 'Fragment Mono', monospace;
+      font-size: 10px;
+      user-select: none;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-platform {
+      font-family: 'Fragment Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 640px) {
+      .container { padding: 0 20px; }
+
+      .nav-links { display: none; }
+
+      .nav-inner { padding: 0 20px; }
+
+      .legal-content { padding: 64px 20px; }
+
+      .legal-heading { font-size: 32px; }
+
+      .footer-top { flex-direction: column; gap: 24px; }
+
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    }
+  </style>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">WAZEAR</a>
+      <ul class="nav-links">
+        <li><a href="/#features">Features</a></li>
+        <li><span class="sep">·</span></li>
+        <li><a href="/#how-it-works">How It Works</a></li>
+        <li><span class="sep">·</span></li>
+        <li><a href="/#pricing">Pricing</a></li>
+        <li><span class="sep">·</span></li>
+        <li><a href="/#faq">FAQ</a></li>
+        <li><span class="sep">·</span></li>
+        <li><a href="/docs">Docs</a></li>
+        <li><span class="sep">·</span></li>
+        <li><a href="/#pricing" class="nav-cta">Get Wazear — $49</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- PRIVACY CONTENT -->
+  <main class="legal-content">
+    <h1 class="legal-heading serif">Privacy Policy</h1>
+    <p class="legal-updated mono">Last updated: March 2026</p>
+
+    <div class="legal-section">
+      <p>This Privacy Policy explains what information Wazear collects, how it is used, and your rights in relation to it. We have written this policy to be factually precise. Wazear is a fully local application and the scope of data we collect is minimal.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>1. Who We Are</h2>
+      <p>Wazear is developed and distributed by the Wazear team, operating from Egypt. You can contact us via our <a href="/contact">Contact page</a>.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>2. What Wazear Does Not Collect</h2>
+      <p>Wazear the application collects zero data. There is no telemetry, no analytics, no crash reporting, no usage tracking, and no phone-home functionality of any kind built into the Wazear desktop application. We do not receive any information about how you use the software, what projects you run, or what your system looks like.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>3. What Wazear Does Collect — Website</h2>
+      <p>If you visit wazear.space, standard web hosting infrastructure may log basic server access data (such as IP addresses and page requests). This is handled by our hosting provider and is not data we actively collect or analyze. We do not use tracking cookies, advertising pixels, or analytics scripts on our website.</p>
+      <p>If you submit your email address to our waitlist for Mac/Windows notifications, that address is stored solely for the purpose of notifying you when those versions are available. It is not sold, shared with third parties, or used for any other purpose.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>4. Payment Data</h2>
+      <p>All payment transactions are processed by Paddle.com Market Limited (Judd House, 18-29 Mora Street, London, EC1V 8BT, UK). We do not receive or store your payment card details. Paddle may collect and process personal information such as your name, email address, billing address, and payment details as part of processing your transaction. This processing is governed by Paddle's Privacy Policy, available at paddle.com/legal/privacy.</p>
+      <p>We receive from Paddle only the information necessary to fulfill your license: a purchase confirmation, the version purchased, and your email address for license delivery purposes.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>5. Third-Party AI Providers</h2>
+      <p>When you use Wazear, your project content — briefs, instructions, code, and any other input — is transmitted to the AI provider you have configured. This may be Qwen (via Qwen Code), OpenAI, Google Gemini, or any provider accessible through OpenRouter.</p>
+      <p>Wazear does not intercept this data. It passes directly from your machine to the provider. Each provider's handling of your data is governed by their own privacy policy and terms of service, which we strongly encourage you to review:</p>
+      <ul>
+        <li><strong>Qwen / Alibaba Cloud:</strong> qwenlm.github.io — Note: Qwen is developed by Alibaba, a Chinese company. User data processed through Qwen may be stored on servers in China. If you are located in the EU or UK, you should be aware that China does not have an EU adequacy decision and that this data transfer may not comply with GDPR. Users in those jurisdictions are advised to use their own API key with an EU/US-based provider instead.</li>
+        <li><strong>OpenAI:</strong> openai.com/policies/privacy-policy</li>
+        <li><strong>Google Gemini:</strong> policies.google.com/privacy</li>
+        <li><strong>OpenRouter:</strong> openrouter.ai/privacy</li>
+      </ul>
+      <p>Separately, Qwen Code itself — the underlying engine Wazear uses — may collect optional, anonymous usage statistics to improve its own product. This telemetry is controlled by Qwen Code's own settings and is independent of Wazear. Wazear does not collect or receive this data.</p>
+      <p>By using Wazear with any AI provider, you acknowledge and accept that your inputs are processed under that provider's terms.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>6. Local Storage</h2>
+      <p>Wazear stores your project files, agent configurations, and pipeline outputs locally on your machine in the directory you choose. This data never leaves your machine via Wazear. We have no access to it.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>7. Children's Privacy</h2>
+      <p>Wazear is not directed at individuals under the age of 18. We do not knowingly collect personal information from minors. If you believe a minor has submitted information through our website, contact us and we will take appropriate action.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>8. Data Subject Rights</h2>
+      <p>Because Wazear does not collect personal data beyond what is described above (waitlist emails and Paddle-managed purchase records), your rights under applicable data protection law are limited in scope relative to Wazear specifically.</p>
+      <p>For waitlist emails: you may request deletion at any time by contacting us. For purchase data: contact Paddle directly, as they are the data controller for your payment information.</p>
+      <p>If you are located in the European Economic Area or United Kingdom, you may have additional rights under GDPR or UK GDPR, including the right to access, rectification, erasure, and portability. These apply to data we actually hold, which is limited to waitlist emails where applicable.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>9. International Transfers and Applicable Law</h2>
+      <p>Wazear operates from Egypt. Egypt does not currently hold an EU adequacy decision, meaning the European Commission has not formally determined that Egypt provides data protection equivalent to the GDPR. However, Egypt enacted its own comprehensive data protection framework — Personal Data Protection Law No. 151 of 2020 — which is modelled substantially on the GDPR. That law's executive regulations (Executive Decree No. 816 of 2025) entered into force on 10 November 2025, making the framework fully operational.</p>
+      <p>In practical terms, the data Wazear itself handles about you is minimal: if you are on our waitlist, we hold your email address. If you purchased Wazear, Paddle holds your transaction data and provides us only a purchase confirmation and email for license delivery. Wazear does not hold, process, or transfer your project content or AI prompts — those go directly from your machine to whichever AI provider you have configured, under that provider's terms.</p>
+      <p>If you are located in the EEA or UK and are concerned about the transfer of your waitlist email to Egypt, you may contact us to request deletion at any time. For EU users, we rely on your explicit consent (submitting the waitlist form) as the lawful basis for holding that email, and you may withdraw it at any time.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>10. Changes to This Policy</h2>
+      <p>We may update this Privacy Policy to reflect changes in our practices or legal requirements. Any updates will be posted on our website with a revised date. Continued use of Wazear or our website after an update constitutes acceptance of the revised policy.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>11. Contact</h2>
+      <p>For privacy-related questions or requests, contact us via our <a href="/contact">Contact page</a>.</p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="wordmark mono">WAZEAR</span>
+          <span class="tagline">AI agent orchestration for builders.</span>
+        </div>
+        <nav class="footer-links">
+          <a href="#">Download</a>
+          <span class="sep">·</span>
+          <a href="/docs">Docs</a>
+          <span class="sep">·</span>
+          <a href="/contact">Contact</a>
+          <span class="sep">·</span>
+          <a href="/#faq">FAQ</a>
+          <span class="sep">·</span>
+          <a href="/terms">Terms & Conditions</a>
+          <span class="sep">·</span>
+          <a href="/privacy">Privacy Policy</a>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-platform mono">Currently available on Linux · Mac and Windows coming soon</span>
+        <span class="footer-copy">© 2026 Wazear. All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+</BaseLayout>

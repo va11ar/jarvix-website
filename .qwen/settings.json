@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm *)",
+      "Bash(npm run *)",
+      "Bash(lsof *)",
+      "Bash(npx *)",
+      "Bash(sleep *)",
+      "Bash(curl *)",
+      "Bash(pkill *)",
+      "Bash(cp *)",
+      "Bash(mkdir *)",
+      "Bash(astro *)"
+    ]
+  },
+  "$version": 3
+}
