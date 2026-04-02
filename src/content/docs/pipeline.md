@@ -1,6 +1,6 @@
 ---
 title: "Pipeline"
-order: 3
+order: 5
 ---
 
 Understand the agent pipeline and workflow orchestration.

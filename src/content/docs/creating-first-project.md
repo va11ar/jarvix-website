@@ -1,17 +1,17 @@
 ---
-title: "Creating Your First Project"
-order: 2
+title: "Creating First Project"
+order: 4
 ---
 
 # Creating a project
-Time for some action, let's create a project to get an idea of how Jarvix works.
+Time for some action, let's create a project to get an idea of how Wazear works.
 
 * Click on "Menu > New Project" or press `Ctrl + N`. This will open the new project dialog
 * Choose a name for your project and where you want the project to live.
 * The last part of this section is the brief. This is the prompt that will kickstart work on your project. We recommend you be descriptive with what you want and make sure you include everything you (or don't want) in there. For this test run we'll keep it simple and use "A web app that allows the user to upload a .CSV that includes their financial transactions over a period of time. The app should show the transactions in a list. How much they have now, how much they earned during so far, how much they've spend so far. What is the biggest three things they spend on (at least 2 recurring transactions per item). It also shows an over time graph depicting how much money they had. The app should look modern and sleek. Do not create a backend for this app." The reason we included the last line is to prevent the [agents](agents.md) from overcomplicating the task and setting up a server with a proper backend system for something like this.
-* This shows the list of [agents](agents.md) currently available. Jarvix ships with a few [agents](agents.md) that simulates the SDLC. We're going to grab all of them and add them in this order Planner > Planner Reviewer > Architect > Architect Reviewer > Programmer > Programmer Reviewer > Fixer > QA.
+* This shows the list of [agents](agents.md) currently available. Wazear ships with a few [agents](agents.md) that simulates the SDLC. We're going to grab all of them and add them in this order Planner > Planner Reviewer > Architect > Architect Reviewer > Programmer > Programmer Reviewer > Fixer > QA.
 * This screen allows you to choose commands the [agents](agents.md) are allowed to use. Commands are based on which tech stack the [agents](agents.md) will use. So if you want your project to use NodeJS for example, then you select NodeJS and it will whitelist commands related to `nmp` such as `npm audit` for example. For now, we'll pretend we don't know and not select anything.
-> Note that Jarvix by default prevents all [agents](agents.md) except the _producer_ role [agents](agents.md) (in this case the Programmer) to run commands. Even if you do not select a stack, Jarvix will attempt to detect them automatically see [Security](security.md) page for more information.
+> Note that Wazear by default prevents all [agents](agents.md) except the _producer_ role [agents](agents.md) (in this case the Programmer) to run commands. Even if you do not select a stack, Wazear will attempt to detect them automatically see [Security](security.md) page for more information.
 * We'll press "Next" and that is it. You've created your first project.
 
 > Note that if you want to change your brief at any point later you can either click on Menu > Open brief or navigate in you file system to your project folder > Context and then open brief.md with your favorite text editor.
@@ -28,29 +28,31 @@ Usually you won't need to change anything here but it is good to know where thin
 
 
 ## Running your first pipeline.
-Before we run our pipeline it is important to understand how the pipeline works. By default, Jarvix's pipeline works in sequence. This means one [agents](agents.md) does work, it hands the result to the next [agents](agents.md) and that second [agents](agents.md) hands their work to the following [agents](agents.md). It continues in one direction like this until the pipeline is completed. However, introducing an [agents](agents.md) with their role set to _reviewer_ changes this and introduces cycles. Right now, Jarvix supports only 2-agents loops. This means that one [agents](agents.md) will produce some work, another marked as _reviewer_ will review that work and then decide if it fulfills the criteria set out for this [agents](agents.md) or not. If it fulfills the criteria, it passes the work to the next [agents](agents.md) in the sequence. If not, then it returns the pipeline to the [agents](agents.md) to fix its mistakes. This is done through the context files. Each [agents](agents.md) creates a [agent-name].md context file (i.e. planner.md). It writes in it one of two things; first, what it did (i.e. the plan in case of the planner [agents](agents.md)) and a checkpoint check (i.e. done or not, whether it has errors or not). You are able to find those files as mentioned above in the "Context" folder. You can modify those files if you wish -- just remember if you do, it will affect the output of the next [agents](agents.md) consuming that file. 
+Before we run our pipeline it is important to understand how the pipeline works. By default, Wazear's pipeline works in sequence. This means one [agents](agents.md) does work, it hands the result to the next [agents](agents.md) and that second [agents](agents.md) hands their work to the following [agents](agents.md). It continues in one direction like this until the pipeline is completed. 
+However, introducing an [agents](agents.md) with their role set to _reviewer_ changes this and introduces cycles. Right now, Wazear supports only 2-agents loops. This means that one [agents](agents.md) will produce some work, another marked as _reviewer_ will review that work and then decide if it fulfills the criteria set out for this [agents](agents.md) or not. If it fulfills the criteria, it passes the work to the next [agents](agents.md) in the sequence. If not, then it returns the pipeline to the [agents](agents.md) to fix its mistakes. This is done through the context files. 
+Each [agents](agents.md) creates a [agent-name].md context file (i.e. planner.md). It writes in it one of two things; first, what it did (i.e. the plan in case of the planner [agents](agents.md)) and a checkpoint check (i.e. done or not, whether it has errors or not). You are able to find those files as mentioned above in the "Context" folder. You can modify those files if you wish -- just remember if you do, it will affect the output of the next [agents](agents.md) consuming that file. 
 
 > Note that this revision loop system has two types as will be mentioned in the [agents](agents.md) page and must be set manually for them to work. The sample [agents](agents.md) come pre-configured based on their roles and what we believe works best in general. You're free to modify them or create new ones.
 
-Given Jarvix gives you control over how you run the pipeline, you can at any point pause the pipeline. Pausing the pipeline does not reset progress but stops the pipeline from progressing. That said, you can also abort the pipeline which will kill the current [agents](agents.md) aggressively and may result in loss of progress and data. When that happens you are given a choice when starting the pipeline again to either start from where you left off or you start fresh.
+Given Wazear gives you control over how you run the pipeline, you can at any point pause the pipeline. Pausing the pipeline does not reset progress but stops the pipeline from progressing. That said, you can also abort the pipeline which will kill the current [agents](agents.md) aggressively and may result in loss of progress and data. When that happens you are given a choice when starting the pipeline again to either start from where you left off or you start fresh.
 
 > Note that starting a pipeline fresh means that all context files created by [agents](agents.md) in the "Context" folder are deleted as well as any artifacts in the "Output" folder.
 
 Now that we undersatnd how the pipeline works, let's start the pipeline:
 * Click on the "Start" pipeline button at the top of the Pipeline Status bar. 
 
-When the pipeline is running you can see the current [agents](agents.md) doing work highlighted in the Pipeline Graph as well as the Agents List pane. During the pipeline running you can check the Activity Log pane at the bottom for progress messages. It usually shows information such [agent] started or [agent completeted]. In case any issues occurred this is the window you should first look at. Jarvix outputs helpful warning and error messages in case of any issue that will help you understand what went wrong during your run. 
+When the pipeline is running you can see the current [agents](agents.md) doing work highlighted in the Pipeline Graph as well as the Agents List pane. During the pipeline running you can check the Activity Log pane at the bottom for progress messages. It usually shows information such [agent] started or [agent completeted]. In case any issues occurred this is the window you should first look at. Wazear outputs helpful warning and error messages in case of any issue that will help you understand what went wrong during your run. 
 
 That said, if you've been following this guide without any changes from your end, then you have a QA [agents](agents.md) and this is where the pipeline will stop. It will tell you that the work has been done but it is time for you to review it to make sure the work matches what you want. The QA [agents](agents.md) ships with an MCP (Model Context Protocol) server that allows yout to communicate your feedback with the QA [agents](agents.md) and the _producer_ role [agents](agents.md) (in this case the programmer). Let's do that. 
 
 * Open your project folder > Output 
 * Given our brief gave a lot of agency to implement this, your implementation might be different from mine. However, the key thing is to find an "index.html" file and then double click it. That will launch the web app. 
-* Now go back to Jarvix and click "Ready". It will show you instructions on how to grab a screenshot. After you've read it click OK.
+* Now go back to Wazear and click "Ready". It will show you instructions on how to grab a screenshot. After you've read it click OK.
 * Navigate back to your web app and start using it. When you spot something wrong press `Shift + S` which will grab a screenshot. 
 
-> Note that Jarvix takes a full screen capture. It is recommended that you try and make the artifact (in this case the web app) the dominant element on the screen so it reduces the noise for the [agents](agents.md) to detect what is wrong. That said, we're currently working on an update that would allow you to select a region when capturing screenshots.
+> Note that Wazear takes a full screen capture. It is recommended that you try and make the artifact (in this case the web app) the dominant element on the screen so it reduces the noise for the [agents](agents.md) to detect what is wrong. That said, we're currently working on an update that would allow you to select a region when capturing screenshots.
 
-* Navigate back to Jarvix to write a note explaining what you saw wrong with the screenshot and then press OK.
+* Navigate back to Wazear to write a note explaining what you saw wrong with the screenshot and then press OK.
 * Continue doing this until all issues have been pointed out. 
 * When done, click on "Done -- write report" at the top just below the Pipeline Status toolbar.
 * Now the QA [agents](agents.md) (_qa_ role) will write a report with what it saw wrong (in case you missed something) and including your screenshots and notes without modification and hand it over to the _fixer_ role [agents](agents.md) (Fixer [agents](agents.md) if you're using the sample [agents](agents.md)).
