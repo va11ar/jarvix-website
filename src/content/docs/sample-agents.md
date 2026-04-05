@@ -3,7 +3,6 @@ title: "Sample Agents"
 order: 3
 ---
 
-# Sample Agents
 When you first launch Wazear and go through the onboarding process, you will be asked whether or not you want to use the sample agents that ship with it. Wazear ships with a set of predefined agents that simulate the SDLC and they are in order:
 1. Planner
 2. Planner Reviewer

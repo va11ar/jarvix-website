@@ -3,7 +3,7 @@ title: "Creating First Project"
 order: 4
 ---
 
-# Creating a project
+## Creating a project
 Time for some action, let's create a project to get an idea of how Wazear works.
 
 * Click on "Menu > New Project" or press `Ctrl + N`. This will open the new project dialog
@@ -16,7 +16,7 @@ Time for some action, let's create a project to get an idea of how Wazear works.
 
 > Note that if you want to change your brief at any point later you can either click on Menu > Open brief or navigate in you file system to your project folder > Context and then open brief.md with your favorite text editor.
 
-## Anatomy of a project.
+### Anatomy of a project.
 Now that we've created a project let's look at what a project is on our disk. First, navigate to your project's folder. You should see something similar to below:
 
 There are three main things to note here:
@@ -27,7 +27,7 @@ There are three main things to note here:
 Usually you won't need to change anything here but it is good to know where things live if you wanted to modify anything. For example, if you want to review the QA agent report then you can find it in context. If you want to add images for your web app (instead of spending tokens generating placeholder) then you can place them in the appropriate folder inside the Output folder. 
 
 
-## Running your first pipeline.
+### Running your first pipeline.
 Before we run our pipeline it is important to understand how the pipeline works. By default, Wazear's pipeline works in sequence. This means one [agents](agents.md) does work, it hands the result to the next [agents](agents.md) and that second [agents](agents.md) hands their work to the following [agents](agents.md). It continues in one direction like this until the pipeline is completed. 
 However, introducing an [agents](agents.md) with their role set to _reviewer_ changes this and introduces cycles. Right now, Wazear supports only 2-agents loops. This means that one [agents](agents.md) will produce some work, another marked as _reviewer_ will review that work and then decide if it fulfills the criteria set out for this [agents](agents.md) or not. If it fulfills the criteria, it passes the work to the next [agents](agents.md) in the sequence. If not, then it returns the pipeline to the [agents](agents.md) to fix its mistakes. This is done through the context files. 
 Each [agents](agents.md) creates a [agent-name].md context file (i.e. planner.md). It writes in it one of two things; first, what it did (i.e. the plan in case of the planner [agents](agents.md)) and a checkpoint check (i.e. done or not, whether it has errors or not). You are able to find those files as mentioned above in the "Context" folder. You can modify those files if you wish -- just remember if you do, it will affect the output of the next [agents](agents.md) consuming that file. 
