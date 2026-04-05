@@ -1,14 +1,20 @@
 ---
 interface Props {
   title: string;
+  description?: string;
+  canonical?: string;
 }
 const { title } = Astro.props;
+const description = Astro.props.description ?? 'Wazear is a local desktop AI agent orchestrator that runs structured pipelines — one agent builds, another tears it apart. You get what survives.';
+const canonical = Astro.props.canonical ?? 'https://wazear.space';
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
     <title>{title} — Wazear</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
