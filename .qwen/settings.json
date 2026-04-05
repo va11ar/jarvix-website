@@ -10,7 +10,8 @@
       "Bash(pkill *)",
       "Bash(cp *)",
       "Bash(mkdir *)",
-      "Bash(astro *)"
+      "Bash(astro *)",
+      "Bash(test *)"
     ]
   },
   "$version": 3
